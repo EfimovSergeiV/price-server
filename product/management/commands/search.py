@@ -47,6 +47,8 @@ class Command(BaseCommand):
         'telwin': 13,
     }
 
+
+    data = []
     count = 0
 
     def add_arguments(self , parser):
@@ -94,48 +96,82 @@ class Command(BaseCommand):
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ids_response)])
             products_qs = product_queryset.filter(brand = brand_name).filter(id__in = ids_response).order_by(preserved)
 
-            tmp_data = ()
 
+            tmp_data = {
+                "product": { "id": search_query["id"], "vcode": search_query["vcode"], "name": search_query["product"] },
+                "options": []
+            }
+
+
+            variant_counter = 0
             for product_qs in products_qs:
+                variant_counter += 1
                 a = to_word_list(product_qs.name)
 
-                # Проверка на полное совпадение
+                tmp_data['options'].append(
+                    { "vcode": product_qs.vcode, "price": product_qs.price, "name": product_qs.name }
+                )
+
+                # Проверка на полное и совпадение по venodor code
                 similar_words = True
                 for c in a:
                     if c not in b:
                         similar_words = False
-
                 if True:
                     if similar_words or product_qs.vcode == search_query["vcode"]:
                         if similar_words and product_qs.vcode == search_query["vcode"]:
-                            print(Fore.WHITE  + f'{product_qs.id}\tVC {product_qs.vcode}\t{product_qs.price} RUB\t{product_qs.name[0:180]}')
+                            print(Fore.WHITE  + f'{variant_counter}.\tVC {product_qs.vcode}\t{product_qs.price} RUB\t{product_qs.name[0:180]}')
                         else:
-                            print(Fore.CYAN + f'{product_qs.id}\tVC {product_qs.vcode}\t{product_qs.price} RUB\t{product_qs.name[0:180]}')
+                            print(Fore.CYAN + f'{variant_counter}.\tVC {product_qs.vcode}\t{product_qs.price} RUB\t{product_qs.name[0:180]}')
                     else:
-                        print(Fore.YELLOW + f'{product_qs.id}\tVC {product_qs.vcode}\t{product_qs.price} RUB\t{product_qs.name[0:180]}')
+                        print(Fore.YELLOW + f'{variant_counter}.\tVC {product_qs.vcode}\t{product_qs.price} RUB\t{product_qs.name[0:180]}')
 
 
-                    """
-                    Return jsonFile with chenges
+            """
+            Return jsonFile with chenges
 
-                    [
-                        { 
-                            "id": INT, 
-                            "price": INT,
-                            "vcode": False, 
-                            "rename": False, 
-                            "dissable": False  
-                        },
-                    ]
-                    """
+            [
+                { 
+                    "id": INT, 
+                    "price": INT,
+                    "vcode": False, 
+                    "rename": False, 
+                    "dissable": False  
+                },
+            ]
+            """
 
-                
+            
+
             action = input("\nEnter action:\t")
-                
-                # if action == '':
-                #     data.append(
-                #         { "id": search_query["id"], "price":  }
-                #     )
+
+            if action == '':
+                self.data.append(
+                    { "id": tmp_data["product"]["id"], "price": tmp_data['options'][0]["price"], }
+                )
+            elif action == ' ':
+                pass 
+            elif action in [ str(i) for i in range( 1, len(tmp_data['options']) + 1 ) ]:
+                value = int(action)
+                self.data.append(
+                    { "id": tmp_data["product"]["id"], "price": tmp_data['options'][value - 1]["price"], }
+                )
+
+            elif action.lower() in ('d', "del", ):
+                self.data.append(
+                    {"id": tmp_data["product"]["id"], "dissable": True } 
+                )
+            else:
+                print(len(tmp_data['options']))
+                break
+
+
+
+
+            print(
+                f'{len(self.data)}: {self.data}'
+            )
+
 
 
 
