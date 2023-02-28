@@ -86,13 +86,15 @@ class Command(BaseCommand):
             self.count += 1
             b = to_word_list(search_query["product"])
             
-            if self.count == 187:
+            if True:
                 print(f'\nCNT{ self.count }\n{search_query["id"]}\tVC { search_query["vcode"] }\t{int(search_query["price"])} RUB\t{search_query["product"]}')
 
             ids_response = [ product.id for product in response]
 
             preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ids_response)])
             products_qs = product_queryset.filter(brand = brand_name).filter(id__in = ids_response).order_by(preserved)
+
+            tmp_data = ()
 
             for product_qs in products_qs:
                 a = to_word_list(product_qs.name)
@@ -103,34 +105,39 @@ class Command(BaseCommand):
                     if c not in b:
                         similar_words = False
 
-
-                if self.count == 187:
-
-
+                if True:
                     if similar_words or product_qs.vcode == search_query["vcode"]:
-
                         if similar_words and product_qs.vcode == search_query["vcode"]:
                             print(Fore.WHITE  + f'{product_qs.id}\tVC {product_qs.vcode}\t{product_qs.price} RUB\t{product_qs.name[0:180]}')
-                        
                         else:
                             print(Fore.CYAN + f'{product_qs.id}\tVC {product_qs.vcode}\t{product_qs.price} RUB\t{product_qs.name[0:180]}')
-                    
                     else:
                         print(Fore.YELLOW + f'{product_qs.id}\tVC {product_qs.vcode}\t{product_qs.price} RUB\t{product_qs.name[0:180]}')
 
 
+                    """
+                    Return jsonFile with chenges
+
+                    [
+                        { 
+                            "id": INT, 
+                            "price": INT,
+                            "vcode": False, 
+                            "rename": False, 
+                            "dissable": False  
+                        },
+                    ]
+                    """
+
+                
+            action = input("\nEnter action:\t")
+                
+                # if action == '':
+                #     data.append(
+                #         { "id": search_query["id"], "price":  }
+                #     )
 
 
-        """
-        Return jsonFile with chenges
 
-        [
-            { 
-                "id": INT, 
-                "price": INT,
-                "vcode": False, 
-                "rename": False, 
-                "dissable": False  
-            },
-        ]
-        """
+
+        
