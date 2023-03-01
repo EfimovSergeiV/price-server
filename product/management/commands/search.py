@@ -149,7 +149,7 @@ class Command(BaseCommand):
                 Fore.CYAN + f'\n======================================'
             )
             
-            print(f'WRITED DATA: { self.data }')
+            # print(f'WRITED DATA: { self.data }')
             action = input("\nEnter action:\t")
 
             if action == '':
@@ -182,3 +182,7 @@ class Command(BaseCommand):
             else:
                 break
 
+
+        with open(f'{ BASE_DIR }/output.json', 'w') as file:
+            json.dump(self.data, file)
+    

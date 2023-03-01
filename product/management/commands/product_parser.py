@@ -6,6 +6,7 @@ from pathlib import Path
 import xlsxwriter, json
 import pandas as pd
 from time import sleep
+from django.utils import timezone
 
 from elasticsearch_dsl import Q
 from elasticsearch_dsl import Search
@@ -37,7 +38,7 @@ class Command(BaseCommand):
     help = '--brand fubag/svarog/telwin'
 
     path_prices = {
-        'fubag' : f'{ BASE_DIR }/prices/PriceFubag.xlsx',
+        'fubag' : f'{ BASE_DIR }/prices/Fubag-01-03-2023.xlsx',
         'svarog': f'{ BASE_DIR }/prices/PriceSvarog.xlsx',
         'telwin': f'{ BASE_DIR }/prices/PriceTelwin.xlsx',
     }
@@ -90,7 +91,7 @@ class Command(BaseCommand):
                 if type(price) == int:
                     price = beautiful_price(price)
                     counter += 1
-                    print(f' { counter }.\t{ vcode }\t\t{ name }\t\t{ old_name }\t\t{price}')
+                    # print(f' { counter }.\t{ vcode }\t\t{ name }\t\t{ old_name }\t\t{price}')
 
 
                     if len(qs_products.filter(name = name)) == 0:   # Блок водяного охлаждения GRA 90 <= BUG
@@ -101,9 +102,16 @@ class Command(BaseCommand):
                             old_name =old_name,
                             price = f'{ price }'
                         )
-                        print(f'Created\t{name}')
+                        print(f'{ counter }. Created\t{name}')
                     else:
-                        print(f'Skiped\t{name}')
+                        qs = qs_products.filter(name = name)
+                        if len(qs) == 1:
+                            print(f'{ counter }.\t{qs[0].price} => { price } :Updated\t{ name }')
+                            qs.update(price = f'{ price }', latest_updated=timezone.now() )
+                        
+                        else:
+                            print(f'{ counter }.\tSkiped:\t{name}')
+                            sleep(5)
 
 
 
