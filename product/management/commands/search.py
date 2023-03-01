@@ -1,7 +1,7 @@
 """
 
 """
-
+import os
 from django.core.management.base import BaseCommand
 from elasticsearch_dsl import Q
 from product.documents import ProductDocument
@@ -87,20 +87,32 @@ class Command(BaseCommand):
 
             self.count += 1
             b = to_word_list(search_query["product"])
-            
-            if True:
-                print(f'\nCNT{ self.count }\n{search_query["id"]}\tVC { search_query["vcode"] }\t{int(search_query["price"])} RUB\t{search_query["product"]}')
-
-            ids_response = [ product.id for product in response]
-
-            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ids_response)])
-            products_qs = product_queryset.filter(brand = brand_name).filter(id__in = ids_response).order_by(preserved)
 
 
             tmp_data = {
                 "product": { "id": search_query["id"], "vcode": search_query["vcode"], "name": search_query["product"] },
                 "options": []
             }
+
+            writed_be = {
+                "id": tmp_data["product"]["id"],
+                "price": False,
+                "vcode": False,
+                "rename": False,
+                "dissable": False
+            }
+            
+            os.system('clear')
+            if len(self.data) > 0:
+                print(f'Latest: { self.data[-1] }\n')
+            
+            if True:
+                print(f'\nCNT:{ self.count }\n{search_query["id"]}\tVC { search_query["vcode"] }\t{int(search_query["price"])} RUB\t{search_query["product"]}')
+
+            ids_response = [ product.id for product in response]
+
+            preserved = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(ids_response)])
+            products_qs = product_queryset.filter(brand = brand_name).filter(id__in = ids_response).order_by(preserved)
 
 
             variant_counter = 0
@@ -125,45 +137,76 @@ class Command(BaseCommand):
                             print(Fore.CYAN + f'{variant_counter}.\tVC {product_qs.vcode}\t{product_qs.price} RUB\t{product_qs.name[0:180]}')
                     else:
                         print(Fore.YELLOW + f'{variant_counter}.\tVC {product_qs.vcode}\t{product_qs.price} RUB\t{product_qs.name[0:180]}')
-
-
-            """
-            Return jsonFile with chenges
-
-            [
-                { 
-                    "id": INT, 
-                    "price": INT,
-                    "vcode": False, 
-                    "rename": False, 
-                    "dissable": False  
-                },
-            ]
-            """
-
             
-
+            print(
+                Fore.BLUE + f'\n======================================',
+                Fore.BLUE + f'\n Number product - select number option',
+                Fore.BLUE + f'\n Space - skip',
+                Fore.BLUE + f'\n Enter - select first option',
+                Fore.BLUE + f'\n v - rewrite vcode',
+                Fore.BLUE + f'\n n - rewrite name',
+                Fore.BLUE + f'\n d - dissable product',
+                Fore.BLUE + f'\n======================================'
+            )
+            
+            print(f'WRITED DATA: { self.data }')
             action = input("\nEnter action:\t")
 
             if action == '':
-                self.data.append(
-                    { "id": tmp_data["product"]["id"], "price": tmp_data['options'][0]["price"], }
-                )
-            elif action == ' ':
-                pass 
-            elif action in [ str(i) for i in range( 1, len(tmp_data['options']) + 1 ) ]:
-                value = int(action)
-                self.data.append(
-                    { "id": tmp_data["product"]["id"], "price": tmp_data['options'][value - 1]["price"], }
-                )
+                current_id_option = 1
+                writed_be["price"] = tmp_data['options'][int(current_id_option) - 1]["price"]
+                self.data.append(writed_be)
+            
+            elif len(action) > 1 or action.lower() in ('v', 'n', 'd',) or action in [ str(i) for i in range( 1, len(tmp_data['options']) + 1 ) ]:
+                for key in list(action):
+                    if key in [ str(i) for i in range( 1, len(tmp_data['options']) + 1 ) ]:
+                        current_id_option = int(key)
+                        writed_be["price"] = tmp_data['options'][int(current_id_option) - 1]["price"]
+                    if key.lower() in ('v',):
+                        writed_be["vcode"] = tmp_data['options'][int(current_id_option) - 1]["vcode"]
+                    if key.lower() in ('n',):
+                        writed_be["name"] = tmp_data['options'][int(current_id_option) - 1]["name"]
+                    if key.lower() in ('d',):
+                        writed_be["dissable"] = True
+                    if key.lower() in ('q',):
+                        break
+                    else:
+                        pass
 
-            elif action.lower() in ('d', "del", ):
-                self.data.append(
-                    {"id": tmp_data["product"]["id"], "dissable": True } 
-                )
+                self.data.append(writed_be)
+                
+
+            elif action == ' ':
+                pass
+
             else:
-                print(len(tmp_data['options']))
                 break
+
+            
+
+            
+
+
+
+            # if action == '':
+            #     self.data.append(
+            #         { "id": tmp_data["product"]["id"], "price": tmp_data['options'][0]["price"], }
+            #     )
+            # elif action == ' ':
+            #     pass 
+            # elif action in [ str(i) for i in range( 1, len(tmp_data['options']) + 1 ) ]:
+            #     value = int(action)
+            #     self.data.append(
+            #         { "id": tmp_data["product"]["id"], "price": tmp_data['options'][value - 1]["price"], }
+            #     )
+
+            # elif action.lower() in ('d', "del", ):
+            #     self.data.append(
+            #         {"id": tmp_data["product"]["id"], "dissable": True } 
+            #     )
+            # else:
+            #     print(len(tmp_data['options']))
+            #     break
 
 
 
