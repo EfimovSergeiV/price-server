@@ -107,7 +107,7 @@ class Command(BaseCommand):
                 print(f'Latest: { self.data[-1] }\n')
             
             if True:
-                print(f'\nCNT:{ self.count }\n{search_query["id"]}\tVC { search_query["vcode"] }\t{int(search_query["price"])} RUB\t{search_query["product"]}')
+                print(f'\nCNT:{ self.count }\n{search_query["id"]}\tVC { search_query["vcode"] }\t{int(search_query["price"])} RUB\t{search_query["product"][0:180]}')
 
             ids_response = [ product.id for product in response]
 
@@ -139,14 +139,14 @@ class Command(BaseCommand):
                         print(Fore.YELLOW + f'{variant_counter}.\tVC {product_qs.vcode}\t{product_qs.price} RUB\t{product_qs.name[0:180]}')
             
             print(
-                Fore.BLUE + f'\n======================================',
-                Fore.BLUE + f'\n Number product - select number option',
-                Fore.BLUE + f'\n Space - skip',
-                Fore.BLUE + f'\n Enter - select first option',
-                Fore.BLUE + f'\n v - rewrite vcode',
-                Fore.BLUE + f'\n n - rewrite name',
-                Fore.BLUE + f'\n d - dissable product',
-                Fore.BLUE + f'\n======================================'
+                # RED GREEN YELLOW BLUE MAGENTA CYAN WHITE
+                Fore.CYAN + f'\n======================================',
+                Fore.CYAN + f'\n Number product - select number option',
+                Fore.CYAN + f'\n Space - skip',
+                Fore.CYAN + f'\n Enter - select first option',
+                Fore.CYAN + f'\n v - rewrite vcode\tn - rewrite name',
+                Fore.CYAN + f'\n d - dissable product\tq - save and exit',
+                Fore.CYAN + f'\n======================================'
             )
             
             print(f'WRITED DATA: { self.data }')
